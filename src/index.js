@@ -1,5 +1,5 @@
-const { response } = require('express');
 const express = require('express')
+const formidable = require('./middleware/formdata');
 const Pool = require('pg').Pool
 const pool = new Pool({
     user: 'me',
@@ -14,6 +14,11 @@ const port = process.env.PORT || 3000
 const app = express()
 
 app.use(express.json())
+app.use(formidable())
+
+app.get('/', (req, res) => {
+    res.send({meassage: 'this is a api using postgres'})
+})
 
 app.get('/users',(req, res) => {
     pool.query('SELECT * FROM users ORDER BY id ASC', (error, results) => {
@@ -36,7 +41,7 @@ app.get('/users/:id', (req, res) => {
 })
 
 app.post('/users', (req, res) => {
-    const {name, email} = req.body
+    const {name, email} = req.fields
     pool.query('INSERT INTO users (name, email) values ($1, $2) RETURNING *', [name, email], (error, results) => {
         if (error) {
             throw error
